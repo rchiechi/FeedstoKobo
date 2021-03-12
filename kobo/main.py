@@ -7,14 +7,15 @@ The PDFs are formatted to read on a Kobo e-reader.
 import sys
 import os
 import time
+import shutil
 import logging
 import logging.config
-from feedtopocket.options import parseopts #pylint: disable=E0401
-from feedtopocket.dosubstack import DoSubstack #pylint: disable=E0401
-from feedtopocket.cache import Cache #pylint: disable=E0401
-from feedtopocket.pocket import DoPocket #pylint: disable=E0401
-from feedtopocket.dropbox import DoDropbox #pylint: disable=E0401
-from feedtopocket.util import cleancache, configtodict #pylint: disable=E0401
+from .options import parseopts
+from .dosubstack import DoSubstack
+from .cache import Cache
+from .pocket import DoPocket
+from .dropbox import DoDropbox
+from .util import cleancache, configtodict
 
 try:
     import colorama as cm
@@ -61,6 +62,13 @@ logger.addHandler(loghandler)
 ############################################################
 # Now we can use the logger                                #
 ############################################################
+
+if config is None:
+    # with open('template.conf') as fh:
+    logger.error("No config file found.")
+    logger.info("Default file created at %s"
+        , opts.configdir)
+    sys.exit()
 
 cache = Cache(opts)
 if opts.clean:

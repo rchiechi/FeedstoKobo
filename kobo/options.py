@@ -2,6 +2,7 @@
 import os
 import argparse
 import configparser
+import shutil
 
 def parseopts():
     '''Parse commandline arguments and config file and return opts, config'''
@@ -63,16 +64,14 @@ def parseopts():
     config = doconfig(os.path.join(opts.configdir,
           __package__+'.conf')
           )
-    # config_file = os.path.join(opts.configdir,
-    #       __package__+'.conf')
-    # config = configparser.ConfigParser(allow_no_value=True)
-    # config.read(os.path.join(opts.configdir,
-    #       __package__+'.conf'))
-
     return opts,config
 
 def doconfig(config_file):
     '''Parse config file or write a default file.'''
+    if not os.path.exists(config_file):
+        _pwd = os.path.dirname(os.path.realpath(__file__))
+        shutil.copy2(os.path.join(_pwd,'template.conf'), config_file)
+        return None
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(config_file)
     if 'USEROPTS' not in config:
