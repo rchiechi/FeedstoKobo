@@ -18,6 +18,14 @@ This script is meant to be called from a cron job on a headless server that can 
 - It will render Substack entries to PDFs and save them to Dropbox. You're on your own for getting your [OAuth credentials](https://www.dropbox.com/developers/reference/getting-started#app%20console).
 - It will send you a Pushover with a screenshot if a login fails. Youre on your own for getting your [API key](https://pushover.net/api).
 
-You will need to install python-pushover, dropbox, pocket, colorama, feedparser, selenium and pdfkit on the server.
+You will need to install the following packages (via pip3) on your server:
+- python-pushover
+- dropbox
+- pocket
+- colorama
+- feedparser
+- selenium
+- pdfkit
+
 Selenium will spawn a headless Firefox session and pdfkit uses wkhtmltopdf, so you'll have to have both of those programs installed.
 FeedstoKobo will kill all running Firefox sessions at the end of a run, so do not run it on a computer on which you use Firefox for other things.
