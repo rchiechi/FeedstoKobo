@@ -12,7 +12,7 @@ It will also lock you out of your account for 24 hours if you fail to log in too
 FeedstoKobo will take custom login urls (that Substack sends you by email) and try to authenticate with those, should you have CAPTCHA issues.
 
 # Setup
-This script is meant to be called from a cron job on a headless server that can serve html files.
+This script is meant to be called from a cron job on a headless server that can serve html files. It has only been tested on Ubuntu 20.04.2 LTS.
 
 - The server should also have a local proxy that, preferably, resolves to the same IP address you use to read Substack at home.
 - It will walk through RSS feeds and save them to pocket. You're on your own for getting your [Pocket OAuth credentials](https://getpocket.com/developer/apps/new).
