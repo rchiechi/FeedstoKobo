@@ -1,5 +1,5 @@
 # FeedstoKobo
-Parse rss feeds and send them to pocket, render Substacks to PDFs and send them to Dropbox to read on a Kobo Reader.
+Parse rss feeds and send them to Pocket, render Substacks to PDFs and send them to Dropbox to read on a Kobo Reader.
 
 I wrote this for myself because I prefer reading long articles on my Kobo e-reader.
 **Don't expect anything fancy.**
