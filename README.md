@@ -12,10 +12,11 @@ FeedstoKobo will take custom login urls (that Substack sends you by email) and t
 
 # Setup
 This script is meant to be called from a cron job on a headless server that can serve html files.
-The server should also have a local proxy that, preferably, resolves to the same IP address you use to read Substack at home.
-It will walk through RSS feeds and save them to pocket. You're on your own for getting your [OAuth credentials](https://getpocket.com/developer/apps/new).
-It will render Substack entries to PDFs and save them to Dropbox. You're on your own for getting your [OAuth credentials](https://www.dropbox.com/developers/reference/getting-started#app%20console).
-It will send you a Pushover with a screenshot if a login fails. Youre on your own for getting your [API key](https://pushover.net/api).
+
+- The server should also have a local proxy that, preferably, resolves to the same IP address you use to read Substack at home.
+- It will walk through RSS feeds and save them to pocket. You're on your own for getting your [OAuth credentials](https://getpocket.com/developer/apps/new).
+- It will render Substack entries to PDFs and save them to Dropbox. You're on your own for getting your [OAuth credentials](https://www.dropbox.com/developers/reference/getting-started#app%20console).
+- It will send you a Pushover with a screenshot if a login fails. Youre on your own for getting your [API key](https://pushover.net/api).
 
 You will need to install python-pushover, dropbox, pocket, colorama, feedparser, selenium and pdfkit on the server.
 Selenium will spawn a headless Firefox session and pdfkit uses wkhtmltopdf, so you'll have to have both of those programs installed.
