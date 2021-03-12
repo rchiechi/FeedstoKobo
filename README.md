@@ -2,7 +2,8 @@
 Parse rss feeds and send them to pocket, render Substacks to PDFs and send them to Dropbox to read on a Kobo Reader.
 
 I wrote this for myself because I prefer reading long articles on my Kobo e-reader.
-Don't expect anything fancy.
+**Don't expect anything fancy.**
+
 Pocket cannot render Substacks and Kobo readers can only render pocket entries, not redirects.
 But Kobo readers can load PDFs from Dropbox.
 FeedstoKobo, therefore, will try to render PDFs from Substack entries.
