@@ -7,7 +7,7 @@ I wrote this for myself because I prefer reading long articles on my Kobo e-read
 Pocket cannot render Substacks and Kobo readers can only render pocket entries, not redirects.
 But Kobo readers can load PDFs from Dropbox.
 FeedstoKobo, therefore, will try to render PDFs from Substack entries.
-It seems like the folks at Substack don't want you to do that, so it will throw up CAPTCHA pages.
+It seems like the folks at Substack don't want you to do that, so substack will throw up CAPTCHA pages.
 It will also lock you out of your account for 24 hours if you fail to log in too many times in a row.
 FeedstoKobo will take custom login urls (that Substack sends you by email) and try to authenticate with those, should you have CAPTCHA issues.
 
