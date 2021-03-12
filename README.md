@@ -16,7 +16,7 @@ This script is meant to be called from a cron job on a headless server that can 
 
 - The server should also have a local proxy that, preferably, resolves to the same IP address you use to read Substack at home.
 - It will walk through RSS feeds and save them to pocket. You're on your own for getting your [Pocket OAuth credentials](https://getpocket.com/developer/apps/new).
-- It will render Substack entries to PDFs and save them to Dropbox. You're on your own for getting your [Dropbox credentials](https://www.dropbox.com/developers/reference/getting-started#app%20console).
+- It will render Substack entries to PDFs and save them to Dropbox. You're on your own for getting your [Dropbox App credentials](https://www.dropbox.com/developers/reference/getting-started#app%20console).
 - It will send you a Pushover with a screenshot if a login fails. Youre on your own for getting your [Pushover API key](https://pushover.net/api).
 
 You will need to install the following packages (via pip3) on your server:
