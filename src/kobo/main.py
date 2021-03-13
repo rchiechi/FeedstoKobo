@@ -35,7 +35,7 @@ if CRONMODE:
     # CRONMODE is going to write to a log file, so no color
     opts.nocolor = True
 
-if opts.nocolor:
+if not opts.nocolor:
     cm.init(autoreset=True)
 
 # Set up terminal logging. Set LOG to a file for cronmode, otherwise
@@ -126,7 +126,8 @@ def substackloop():
             if _pdf_uri is not None:
                 pocket.savetopocket(_f['domain'], _uri,  _title)
             if not opts.cacheonly and _pdf_uri is not None:
-                logger.debug("Attempting to upload %s from %s to dropbox." , _pdf_uri, _f['domain'])
+                logger.debug("Attempting to upload %s from %s to dropbox."
+                        , _pdf_uri, _f['domain'])
                 ss_cached.append(dropbox.pdftodropbox(_pdf_uri,
                             pdfopts, _f['fontsize']))
 
