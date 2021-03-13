@@ -65,7 +65,7 @@ class DoSubstack():
             self.logger.error(rss_feed['bozo_exception'])
         else:
             if self.driver is None:
-                self.setup_driver()
+                self.__setup_driver()
             for rss_item in rss_feed['entries']:
                 _pdf_uri = self.__parse_rss_item(ss_entry, rss_item)
                 if self.driver is not None:
@@ -85,10 +85,20 @@ class DoSubstack():
         self.checkforjail(release=True)
         self.__docustomlogins()
 
+    def cleanup(self):
+        '''Call this when all feeds are parsed.'''
+        self.logger.debug("Cleaning up web driver.")
+        if self.driver is not None:
+            self.driver.quit()
+            time.sleep(3)
+            if os.system('pgrep firefox > /dev/null') == 0:
+                self.logger.warning("Manually killing firefox.")
+                os.system('killall firefox')
+
     def __docustomlogins(self):
         '''Use custom login urls to set cookies.'''
         if self.driver is None:
-            self.setup_driver()
+            self.__setup_driver()
         cookies = self.cache.get('cookies')
         for domain in self.logins:
             self.driver.delete_all_cookies()
@@ -120,7 +130,7 @@ class DoSubstack():
         self.cache.set(ss_jail, 'substack_jail')
         return ss_jail[0]
 
-    def setup_driver(self):
+    def __setup_driver(self):
         ''' Set up the webdriver with a proxy'''
         web_opts = Options()
         web_opts.headless = True
@@ -133,16 +143,6 @@ class DoSubstack():
         self.driver = webdriver.Firefox(options=web_opts,
             desired_capabilities=web_capabilities)
         self.driver.implicitly_wait(10) # seconds
-
-    def cleanup(self):
-        '''Call this when all feeds are parsed.'''
-        self.logger.debug("Cleaning up web driver.")
-        if self.driver is not None:
-            self.driver.quit()
-            if os.system('pgrep firefox > /dev/null') == 0:
-                self.logger.warning("Manually killing firefox.")
-                os.system('killall firefox')
-
 
     def __parse_rss_item(self, ss_entry, rss_item):
         '''Parse and individual rss item from a ss feed item'''
