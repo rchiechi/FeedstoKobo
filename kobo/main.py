@@ -7,7 +7,6 @@ The PDFs are formatted to read on a Kobo e-reader.
 import sys
 import os
 import time
-import shutil
 import logging
 import logging.config
 from .options import parseopts
