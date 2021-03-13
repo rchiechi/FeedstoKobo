@@ -63,10 +63,8 @@ logger.addHandler(loghandler)
 ############################################################
 
 if config is None:
-    # with open('template.conf') as fh:
     logger.error("No config file found.")
-    logger.info("Default file created at %s"
-        , opts.configdir)
+    logger.info("Default file created at %s", opts.configdir)
     sys.exit()
 
 cache = Cache(opts)
