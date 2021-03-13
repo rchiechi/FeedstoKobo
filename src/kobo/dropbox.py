@@ -45,9 +45,9 @@ class DoDropbox():
         if self.opts.dryrun:
             logger.info("But not really because dry-run.")
             return  True
-        if self.httpd is None:
-            self.httpd = HttpdThread()
-            self.httpd.start()
+        # if self.httpd is None:
+        #     self.httpd = HttpdThread()
+        #     self.httpd.start()
         tmp_fn = uritopdf(pdf_uri, pdfopts, font_size)
         if tmp_fn is not None:
             logger.debug("Saving pdf of %s to dropbox." , pdf_uri)
@@ -135,7 +135,8 @@ def uritopdf(uri, pdfopts, fontsize=None):
         return None
     try:
         logger.info("Saving %s to pdf." , uri)
-        pdf = pdfkit.from_url(uri, False, options=pdfopts)
+        # pdf = pdfkit.from_url(uri, False, options=pdfopts)
+        pdf = pdfkit.from_file(uri, False, options=pdfopts)
     except OSError:
         return None
     with tempfile.NamedTemporaryFile(delete=False) as _fh:
