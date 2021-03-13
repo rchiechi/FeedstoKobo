@@ -6,8 +6,8 @@ import time
 import datetime
 import tempfile
 import logging
-from .util import checkurl
-from .server import HttpdThread
+# from .util import checkurl
+# from .server import HttpdThread
 
 try:
     import dropbox
