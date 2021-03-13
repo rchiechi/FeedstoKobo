@@ -130,9 +130,9 @@ def uritopdf(uri, pdfopts, fontsize=None):
     if fontsize is not None:
         pdfopts['minimum-font-size'] = fontsize
     logger.debug(pdfopts)
-    if not checkurl(uri):
-        logger.warning("Skipping %s because it does not exist.", uri)
-        return None
+    # if not checkurl(uri):
+    #     logger.warning("Skipping %s because it does not exist.", uri)
+    #     return None
     try:
         logger.info("Saving %s to pdf." , uri)
         # pdf = pdfkit.from_url(uri, False, options=pdfopts)
