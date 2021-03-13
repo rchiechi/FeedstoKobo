@@ -5,9 +5,9 @@ import sys
 import time
 import datetime
 import tempfile
-# import contextlib
 import logging
-from .util import checkurl #pylint: disable=E0401
+from .util import checkurl
+from .server import HttpdThread
 
 try:
     import dropbox
@@ -15,6 +15,8 @@ try:
 except ImportError as msg:
     print("Error loading pacakge %s" , str(msg))
     sys.exit()
+
+logger = logging.getLogger(__name__)
 
 class DoDropbox():
     '''Handling making pdfs and uplading them to dropbox.'''
@@ -33,77 +35,29 @@ class DoDropbox():
                 }
 
     def __init__(self, opts, config):
-        self.logger = logging.getLogger(__name__)
         self.opts = opts
         self.config = config
         self.dbx = dropbox.Dropbox(config['USEROPTS']['DBACCESS'])
-
-    def dbupload(self, fullname, folder, subfolder, name):
-        """Upload a file.
-        Return the request response, or None in case of error.
-        """
-        if self.opts.dryrun:
-            return None
-        self.logger.info("Uploading %s to Dropbox." , name)
-        path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
-        while '//' in path:
-            path = path.replace('//', '/')
-        # mode = (dropbox.files.WriteMode.overwrite
-        #         if overwrite
-        #         else dropbox.files.WriteMode.add)
-        mtime = os.path.getmtime(fullname)
-        with open(fullname, 'rb') as _f:
-            data = _f.read()
-        # with stopwatch('upload %d bytes' % len(data)):
-        try:
-            res = self.dbx.files_upload(
-                data, path, dropbox.files.WriteMode.overwrite,
-                client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
-                mute=True)
-        except dropbox.exceptions.ApiError as err:
-            self.logger.error('*** API error %s', str(err))
-            return None
-        self.logger.debug('uploaded as %s' , str(res.name.encode('utf8')))
-        return res
-
-    def uritopdf(self, uri, pdfopts, fontsize=None):
-        '''Convert a url to a pdf file'''
-        if self.opts.dryrun:
-            self.logger.info("But not really because dry-run.")
-            return  None
-        if fontsize is not None:
-            pdfopts['minimum-font-size'] = fontsize
-        self.logger.debug(pdfopts)
-        if not checkurl(uri):
-            self.logger.warning("Skipping %s because it does not exist.", uri)
-            return None
-        try:
-            self.logger.info("Saving %s to pdf." , uri)
-            pdf = pdfkit.from_url(uri, False, options=pdfopts)
-        except OSError as msg:
-            if not self.opts.cacheonly:
-                self.logger.error("Pdfkit error: %s" , str(msg))
-            return None
-        with tempfile.NamedTemporaryFile(delete=False) as _fh:
-            _fh.write(pdf)
-            _fn = _fh.name
-        if os.path.getsize(_fn) > 5096: # Check here if a real PDF was made
-            return _fn
-        return None
+        self.httpd = None
 
     def pdftodropbox(self, pdf_uri, pdfopts, font_size):
         '''Upload a PDF file to Dropbox'''
-        tmp_fn = self.uritopdf(pdf_uri, pdfopts, font_size)
+        if self.opts.dryrun:
+            logger.info("But not really because dry-run.")
+            return  True
+        if self.httpd is None:
+            self.httpd = HttpdThread()
+            self.httpd.start()
+        tmp_fn = uritopdf(pdf_uri, pdfopts, font_size)
         if tmp_fn is not None:
-            self.logger.debug("Saving pdf of %s to dropbox." , pdf_uri)
-            # dbx = dropbox.Dropbox(DBACCESS)
-            self.dbupload(tmp_fn, '/',
+            logger.debug("Saving pdf of %s to dropbox." , pdf_uri)
+            self.__dbupload(tmp_fn, '/',
                 self.config['USEROPTS']['DBREMOTEDIR'],
                 pdf_uri.split('/')[-1].replace('.html','.pdf')
                 )
             os.remove(tmp_fn)
         else:
-            self.logger.debug("Not attepting db upload after pdfkit error.")
+            logger.debug("Not attepting db upload after pdfkit error.")
             return False
         return True
 
@@ -124,7 +78,7 @@ class DoDropbox():
                 if _time_diff.days >= int(days):
                     _to_delete.append(_c)
             return _to_delete
-        self.logger.info("Pruning %s to %s days.",
+        logger.info("Pruning %s to %s days.",
                         path, days)
         to_delete += __getpdfstodelete(result)
         while result.has_more:
@@ -132,19 +86,61 @@ class DoDropbox():
             to_delete += __getpdfstodelete(result)
         for _c in to_delete:
             if self.opts.dryrun:
-                self.logger.info("Not deleting %s", _c.name)
+                logger.info("Not deleting %s", _c.name)
                 continue
             try:
                 self.dbx.files_delete(_c.path_display)
-                self.logger.info("Deleted %s", _c.name)
+                logger.info("Deleted %s", _c.name)
             except dropbox.exceptions.ApiError:
-                self.logger.error("Error deleting %s", _c.name)
-# @contextlib.contextmanager
-# def stopwatch(message):
-#     """Context manager to print how long a block of code took."""
-#     _t0 = time.time()
-#     try:
-#         yield
-#     finally:
-#         _t1 = time.time()
-#         logger.debug('Total elapsed time for %s: %.3f' , message, _t1 - _t0)
+                logger.error("Error deleting %s", _c.name)
+
+    def cleanup(self):
+        '''Clean up after all PDFs are uploaded.'''
+        if self.httpd is not None:
+            self.httpd.stop()
+            self.httpd.join()
+
+    def __dbupload(self, fullname, folder, subfolder, name):
+        """Upload a file.
+        Return the request response, or None in case of error.
+        """
+        if self.opts.dryrun:
+            return None
+        logger.info("Uploading %s to Dropbox." , name)
+        path = '/%s/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'), name)
+        while '//' in path:
+            path = path.replace('//', '/')
+        mtime = os.path.getmtime(fullname)
+        with open(fullname, 'rb') as _f:
+            data = _f.read()
+        try:
+            res = self.dbx.files_upload(
+                data, path, dropbox.files.WriteMode.overwrite,
+                client_modified=datetime.datetime(*time.gmtime(mtime)[:6]),
+                mute=True)
+        except dropbox.exceptions.ApiError as err:
+            logger.error('*** API error %s', str(err))
+            return None
+        logger.debug('uploaded as %s' , str(res.name.encode('utf8')))
+        return res
+
+
+def uritopdf(uri, pdfopts, fontsize=None):
+    '''Convert a url to a pdf file'''
+    if fontsize is not None:
+        pdfopts['minimum-font-size'] = fontsize
+    logger.debug(pdfopts)
+    if not checkurl(uri):
+        logger.warning("Skipping %s because it does not exist.", uri)
+        return None
+    try:
+        logger.info("Saving %s to pdf." , uri)
+        pdf = pdfkit.from_url(uri, False, options=pdfopts)
+    except OSError:
+        return None
+    with tempfile.NamedTemporaryFile(delete=False) as _fh:
+        _fh.write(pdf)
+        _fn = _fh.name
+    if os.path.getsize(_fn) > 5096: # Check here if a real PDF was made
+        return _fn
+    return None

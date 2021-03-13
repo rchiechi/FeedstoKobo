@@ -10,10 +10,9 @@ import os
 import time
 import datetime
 import logging
-# import urllib.parse
 import re
-from .constants import STRFTIME  #pylint: disable=E0401
-from .util import parseloginurls, sendpushover, hashstring #pylint: disable=E0401
+from .constants import STRFTIME
+from .util import parseloginurls, sendpushover, hashstring
 try:
     import feedparser
     from selenium import webdriver
@@ -44,18 +43,9 @@ class DoSubstack():
                           'logged in': False}
         if self.opts.loginurls:
             self.addlogins()
-        # self.config = configparser.ConfigParser()
-        # self.config.read(os.path.join(self.opts.cachedir,
-        #             'feedstopocket.json'))
 
     def parse_ss_entry(self, ss_entry):
         '''Parse a substack entry from SUBSTACKS'''
-        # if ss_entry['domain'] in self.logins:
-        #     self.ss_status['logged in'] = True
-        #     self.logger.debug(
-        #         "Setting logged in to True because a custom loginurl was used.")
-        # else:
-        #     self.ss_status['logged in'] = False
         self.ss_status['logged in'] = bool(ss_entry['domain'] in self.logins)
         self.ss_status['fetch error'] = False
         rss_feed = feedparser.parse('https://%s/feed' % ss_entry['domain'])
@@ -79,7 +69,6 @@ class DoSubstack():
         '''Add custom login urls, e.g., to bypass CAPTCHA'''
         for _url in self.opts.loginurls:
             _domain = _url.split(';')[0]
-            #_domain = urllib.parse.urlparse(_url).netloc
             self.logins[_domain] = _url.split(';')[1]
             self.logger.info("Adding custom login for %s" , _domain)
         self.checkforjail(release=True)
@@ -150,11 +139,8 @@ class DoSubstack():
         _cleandomain = parseloginurls([ss_entry])[0][1]
         url_basename = rss_item['link'].split('/')[-1]
         html_fn = _cleandomain+'-'+url_basename+'.html'
-        pdf_uri = self.useropts['BASEURL']+'/'+ss_entry['subdir']+'/'+html_fn
-
-        # if ss_entry['domain'] in self.logins:
-        #     self.logger.debug("Logging in to  %s with cusotm link.", rss_item['link'])
-        #     self.__driver_do_login(ss_entry, rss_item)
+        # pdf_uri = self.useropts['BASEURL']+'/'+ss_entry['subdir']+'/'+html_fn
+        pdf_uri = self.useropts['HTMLROOT']+'/'+ss_entry['subdir']+'/'+html_fn
 
         if self.cache.has(pdf_uri, 'links', hashstring(ss_entry['domain'])):
             return None
@@ -245,12 +231,6 @@ class DoSubstack():
         self.ss_status['pause'] += 1
 
         self.logger.debug('Logging in to %s' , ss_entry['domain'])
-        # if ss_entry['domain'] in self.logins:
-        #     self.driver.get(self.logins[ss_entry['domain']])
-        #     self.logger.info('Logging in to %s with a custom url.' ,
-        #         ss_entry['domain'])
-        #     del self.logins[ss_entry['domain']]
-        # else:
         login_uri='https://%s/account/login?email=%s&with_password=1' \
             % (ss_entry['domain'], ss_entry['login'])
         self.driver.get(login_uri)
@@ -267,12 +247,10 @@ class DoSubstack():
                 "Did not find username / password fields in %s",
                 ss_entry['domain']
             )
-        # time.sleep(5)
         _timeout = 30
         while 'my account' in self.driver.title.lower():
             time.sleep(1)
             _timeout -= 1
-        # if 'my account' in self.driver.title.lower():
             if _timeout == 0:
                 self.logger.warning('There was an error logging in to %s.' ,
                     ss_entry['domain'])
@@ -285,7 +263,6 @@ class DoSubstack():
                     self.useropts['PUSHOVERDEVICE'],
                     self.driver.get_screenshot_as_png())
                 return
-            # else:
             self.ss_status['logged in']=True
             return
 
@@ -314,15 +291,6 @@ class DoSubstack():
         self.cache.set(_cookies, 'cookies')
         self.logger.debug('Cached %s cookies for %s.',
             len(_cookies[ss_entry['domain']]), ss_entry['domain'])
-
-        # try:
-        #     self.driver.find_element_by_class_name('audio-player')
-        #     self.logger.warning(
-        #    "Skipping %s because it contains an audio-player class.", rss_link)
-        #     self.ss_status['fetch error'] = False
-        #     return not self.ss_status['fetch error']
-        # except NoSuchElementException:
-        #     pass
 
         try:
             article = self.driver.find_element_by_class_name('markup')

@@ -1,7 +1,7 @@
 '''Handle parsing an rss feed and uploading the links to pocket'''
 import sys
 import logging
-from .util import hashstring, checkurl #pylint: disable=E0401
+from .util import hashstring, checkurl
 
 try:
     from pocket import Pocket, PocketException
