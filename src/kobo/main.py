@@ -138,8 +138,7 @@ def substackloop():
     if False in ss_cached:
         logger.warning("There were errors uploading PDFs to dropbox.")
     substack.cleanup()
-
     if opts.prunedropbox:
         dropbox.prunedropbox(opts.prunedropbox)
-
+    dropbox.cleanup()
     logger.info("#### Done ####")
